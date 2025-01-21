@@ -23,6 +23,9 @@ class ColorPalette:
     that are designed to work well together while maintaining readability.
     """
 
+    # Queue for shuffled palettes
+    _palette_queue: ClassVar[list[dict[str, RGB]]] = []
+
     # Curated color palettes with carefully selected combinations
     PALETTES: ClassVar[list[dict[str, RGB]]] = [
         # Dark themes - Sophisticated and easy on the eyes
@@ -49,13 +52,20 @@ class ColorPalette:
     @classmethod
     def get_random_palette(cls) -> dict[str, RGB]:
         """
-        Select a random color palette from the predefined set.
+        Select a color palette from the shuffled queue.
+        When the queue is empty, reshuffles all palettes.
 
         Returns:
             Dict[str, RGB]: A dictionary containing background ('bg') and
                 foreground ('fg') colors
         """
-        palette = random.choice(cls.PALETTES)
+        if not cls._palette_queue:
+            # Create a new copy of PALETTES and shuffle it
+            cls._palette_queue = cls.PALETTES.copy()
+            random.shuffle(cls._palette_queue)
+        
+        # Get the next palette from the queue
+        palette = cls._palette_queue.pop(0)
         return {"bg": palette["bg"], "fg": palette["fg"]}
 
 
