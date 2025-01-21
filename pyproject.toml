@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "wallpaper-generator"
+version = "0.1.0"
+description = "Desktop wallpaper generator for multi-desktop environments"
+authors = ["Akimitsu Inoue <akimitsu.inoue@gmail.com>"]
+packages = [
+    { include = "genwallpaper", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Pillow = "^10.1.0"
+
+[tool.poetry.scripts]
+genwallpaper = "genwallpaper.__main__:main"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.2"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "B", "UP", "PL", "RUF"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
