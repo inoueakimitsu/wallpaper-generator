@@ -35,6 +35,15 @@ class ColorPalette:
         {"bg": (235, 240, 245), "fg": (40, 50, 60), "description": "Sky light"},
         {"bg": (245, 235, 240), "fg": (50, 40, 55), "description": "Rose light"},
         {"bg": (240, 245, 240), "fg": (45, 55, 45), "description": "Mint light"},
+        # New color themes
+        {"bg": (139, 58, 74), "fg": (176, 196, 222), "description": "Stiletto"},
+        {"bg": (245, 247, 220), "fg": (95, 158, 160), "description": "Mint Julep"},
+        {"bg": (187, 229, 211), "fg": (180, 76, 67), "description": "Surf"},
+        {"bg": (46, 75, 143), "fg": (181, 184, 227), "description": "Sapphire"},
+        {"bg": (75, 0, 130), "fg": (255, 182, 193), "description": "Blue Gem"},
+        {"bg": (74, 103, 65), "fg": (255, 69, 0), "description": "Shadow Green"},
+        {"bg": (227, 38, 54), "fg": (255, 215, 0), "description": "Alizarin Crimson"},
+        {"bg": (102, 205, 170), "fg": (139, 69, 19), "description": "Monte Carlo"},
     ]
 
     @classmethod
