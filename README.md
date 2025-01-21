@@ -66,6 +66,16 @@ The tool includes several carefully selected color combinations for both light a
 - Rose Light: Gentle pink hues
 - Mint Light: Fresh green tints
 
+### Additional Color Themes
+- Stiletto: Deep burgundy with pearl blue accents
+- Mint Julep: Soft cream with seafoam green text
+- Surf: Aqua mint with coral accents
+- Sapphire: Royal blue with periwinkle text
+- Blue Gem: Deep indigo with soft pink text
+- Shadow Green: Forest green with vibrant orange text
+- Alizarin Crimson: Bright red with golden text
+- Monte Carlo: Turquoise with chocolate brown text
+
 ## License
 
 MIT License - see LICENSE file for details.
