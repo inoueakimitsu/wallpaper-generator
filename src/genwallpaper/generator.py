@@ -117,23 +117,46 @@ def generate_wallpapers(
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
 
-        # Calculate grid spacing with overlap for seamless pattern
-        spacing_x = text_width * 1.5
-        spacing_y = text_height * 1.5
-
-        # Calculate number of rows and columns needed to cover the image
-        cols = int(width / spacing_x) + 2
-        rows = int(height / spacing_y) + 2
-
+        # Calculate spacing for 45-degree pattern
+        diagonal_spacing = (text_width + text_height) / 2  # Base diagonal spacing
+        
+        # Calculate grid parameters
+        spacing = diagonal_spacing * 1.2  # Add some space between texts
+        offset = spacing * 0.5  # Offset for creating diagonal pattern
+        
+        # Calculate number of rows and columns needed with overlap
+        cols = int(width / spacing) + 6  # Extra coverage
+        rows = int(height / spacing) + 6  # Extra coverage
+        
         # Draw text in diagonal pattern
-        for row in range(rows):
-            for col in range(cols):
-                # Calculate position with diagonal offset
-                x = col * spacing_x - (row % 2) * (spacing_x / 2)
-                y = row * spacing_y
+        for row in range(-3, rows + 3):  # Extended range for better coverage
+            for col in range(-3, cols + 3):
+                # Calculate base position with diagonal offset
+                x = col * spacing + (row * offset)
+                y = row * spacing
 
-                # Draw text at calculated position
-                draw.text((x, y), text, fill=palette["fg"], font=font)
+                # Create a transparent image for the text
+                text_img = Image.new('RGBA', (text_width * 2, text_height * 2), (0, 0, 0, 0))
+                text_draw = ImageDraw.Draw(text_img)
+                
+                # Draw text at the center of the transparent image
+                text_draw.text(
+                    (text_width // 2, text_height // 2),
+                    text,
+                    fill=palette["fg"] + (255,),  # Add alpha channel
+                    font=font,
+                    anchor="mm"  # Center the text
+                )
+                
+                # Rotate the text image
+                rotated_text = text_img.rotate(45, expand=True, resample=Image.Resampling.BICUBIC)
+                
+                # Calculate paste position
+                paste_x = int(x - rotated_text.width // 2)
+                paste_y = int(y - rotated_text.height // 2)
+                
+                # Paste the rotated text onto the main image
+                image.paste(rotated_text, (paste_x, paste_y), rotated_text)
 
         # Save the generated wallpaper
         output_path = os.path.join(output_dir, f"{text}.png")
