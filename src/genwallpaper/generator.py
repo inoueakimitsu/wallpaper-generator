@@ -69,6 +69,54 @@ class ColorPalette:
         return {"bg": palette["bg"], "fg": palette["fg"]}
 
 
+def _load_font(height: int) -> tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont, int]:
+    """Load and return the font and font size."""
+    font_size = height // 5
+    
+    # Try different system fonts in order of preference
+    font_names = [
+        "DejaVuSans-Bold.ttf",
+        "Arial Bold.ttf",
+        "Helvetica Bold.ttf",
+        "OpenSans-Bold.ttf",
+    ]
+    
+    try:
+        for font_name in font_names:
+            try:
+                return ImageFont.truetype(font_name, font_size), font_size
+            except OSError:
+                continue
+        
+        # If no system fonts are available, use default
+        return ImageFont.load_default(), height // 10
+    except Exception:
+        return ImageFont.load_default(), height // 10
+
+def _create_rotated_text_template(
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    text_width: int,
+    text_height: int,
+    fg_color: RGB,
+) -> Image.Image:
+    """Create and return a rotated text template."""
+    # Create a transparent image for the text
+    text_img = Image.new('RGBA', (text_width * 2, text_height * 2), (0, 0, 0, 0))
+    text_draw = ImageDraw.Draw(text_img)
+    
+    # Draw text at the center of the transparent image
+    text_draw.text(
+        (text_width // 2, text_height // 2),
+        text,
+        fill=fg_color + (255,),  # Add alpha channel
+        font=font,
+        anchor="mm"  # Center the text
+    )
+    
+    # Rotate the text image
+    return text_img.rotate(45, expand=True, resample=Image.Resampling.BICUBIC)
+
 def generate_wallpapers(
     texts: list[str], output_dir: str, width: int = 1920, height: int = 1080
 ) -> None:
@@ -86,6 +134,9 @@ def generate_wallpapers(
     - Text repeated in a diagonal pattern
     - Large, bold text that's easily readable
     """
+    # Load font once for all wallpapers
+    font, font_size = _load_font(height)
+    
     for text in texts:
         # Select a color palette
         palette = ColorPalette.get_random_palette()
@@ -93,34 +144,6 @@ def generate_wallpapers(
         # Create new image with background color
         image = Image.new("RGB", (width, height), palette["bg"])
         draw = ImageDraw.Draw(image)
-
-        # Calculate font size (approximately 1/5 of the image height)
-        font_size = height // 5
-
-        # Try to load a system font, fall back to default if not available
-        try:
-            # Try different system fonts in order of preference
-            font_names = [
-                "DejaVuSans-Bold.ttf",
-                "Arial Bold.ttf",
-                "Helvetica Bold.ttf",
-                "OpenSans-Bold.ttf",
-            ]
-            font = None
-            for font_name in font_names:
-                try:
-                    font = ImageFont.truetype(font_name, font_size)
-                    break
-                except OSError:
-                    continue
-
-            if font is None:
-                font = ImageFont.load_default()
-                # Scale up the default font size since it's typically very small
-                font_size = height // 10
-        except Exception:
-            font = ImageFont.load_default()
-            font_size = height // 10
 
         # Get text dimensions for layout calculations
         bbox = draw.textbbox((0, 0), text, font=font)
@@ -134,36 +157,33 @@ def generate_wallpapers(
         spacing = diagonal_spacing * 1.2  # Add some space between texts
         offset = spacing * 0.5  # Offset for creating diagonal pattern
         
-        # Calculate number of rows and columns needed with overlap
-        cols = int(width / spacing) + 6  # Extra coverage
-        rows = int(height / spacing) + 6  # Extra coverage
+        # Create rotated text template once
+        rotated_text = _create_rotated_text_template(
+            text, font, text_width, text_height, palette["fg"]
+        )
         
-        # Draw text in diagonal pattern
-        for row in range(-3, rows + 3):  # Extended range for better coverage
-            for col in range(-3, cols + 3):
+        # Calculate visible area bounds with some margin
+        margin = max(text_width, text_height)
+        min_row = max(-3, int((-margin) / spacing))
+        max_row = min(int((height + margin) / spacing) + 3, int(height / spacing) + 3)
+        min_col = max(-3, int((-margin) / spacing))
+        max_col = min(int((width + margin) / spacing) + 3, int(width / spacing) + 3)
+        
+        # Draw text in diagonal pattern (only in visible area)
+        for row in range(min_row, max_row):
+            for col in range(min_col, max_col):
                 # Calculate base position with diagonal offset
                 x = col * spacing + (row * offset)
                 y = row * spacing
-
-                # Create a transparent image for the text
-                text_img = Image.new('RGBA', (text_width * 2, text_height * 2), (0, 0, 0, 0))
-                text_draw = ImageDraw.Draw(text_img)
-                
-                # Draw text at the center of the transparent image
-                text_draw.text(
-                    (text_width // 2, text_height // 2),
-                    text,
-                    fill=palette["fg"] + (255,),  # Add alpha channel
-                    font=font,
-                    anchor="mm"  # Center the text
-                )
-                
-                # Rotate the text image
-                rotated_text = text_img.rotate(45, expand=True, resample=Image.Resampling.BICUBIC)
                 
                 # Calculate paste position
                 paste_x = int(x - rotated_text.width // 2)
                 paste_y = int(y - rotated_text.height // 2)
+                
+                # Skip if completely outside the image bounds
+                if (paste_x + rotated_text.width < 0 or paste_x >= width or
+                    paste_y + rotated_text.height < 0 or paste_y >= height):
+                    continue
                 
                 # Paste the rotated text onto the main image
                 image.paste(rotated_text, (paste_x, paste_y), rotated_text)
