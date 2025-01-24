@@ -39,6 +39,31 @@ poetry run genwallpaper --resolution 4k Work Personal Project   # 3840x2160
 poetry run genwallpaper --resolution 1920x1200 Work Personal Project
 ```
 
+## Web Interface
+
+The tool also provides a web interface powered by Streamlit, which allows you to:
+- Generate wallpapers through an interactive interface
+- Preview wallpapers before downloading
+- Download individual wallpapers or all wallpapers as a ZIP file
+- View all available color palettes
+
+### Running the Web Interface
+
+```bash
+# Start the web interface
+poetry run genwallpaper-web
+```
+
+This will launch a local web server and open the interface in your default browser. You can also deploy this interface to Streamlit Community Cloud for free.
+
+### Using the Web Interface
+
+1. Enter text for your wallpaper(s) - separate multiple texts with commas
+2. Adjust the width and height as needed
+3. Click "Generate Preview" to see your wallpapers
+4. Download individual wallpapers or use the ZIP download option for multiple wallpapers
+5. Browse through the available color palettes at the bottom of the page
+
 ### Available Resolution Aliases
 
 - `hd`: 1280x720
